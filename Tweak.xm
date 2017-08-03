@@ -10,12 +10,10 @@ extern "C" CFTypeRef IORegistryEntryCreateCFProperty(io_registry_entry_t entry, 
 static CFTypeRef (*orig_registryEntry)(io_registry_entry_t entry,  CFStringRef key, CFAllocatorRef allocator, IOOptionBits options);
 CFTypeRef replaced_registryEntry(io_registry_entry_t entry,  CFStringRef key, CFAllocatorRef allocator, IOOptionBits options) {
     CFTypeRef retval = NULL;
-    
     if (CFEqual(key, CFSTR("model")))
         retval = CFDataCreate(kCFAllocatorDefault, (const unsigned char *)"iPhone4,1", 10);
     else
         retval = orig_registryEntry(entry, key, allocator, options);
-    
     return retval;
 }
 
@@ -35,8 +33,7 @@ int replaced_ctl(const char *name, void *oldp, size_t *oldlenp, void *newp, size
 }
 
 
-__attribute__((constructor)) static void SiriAuthFixInit()
-{
+__attribute__((constructor)) static void SiriAuthFixInit() {
 	MSHookFunction((void *)IORegistryEntryCreateCFProperty, (void *)replaced_registryEntry, (void **)&orig_registryEntry);
     MSHookFunction((void *)sysctlbyname, (void *)replaced_ctl, (void **)&orig_ctl);
 }
